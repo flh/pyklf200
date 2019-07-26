@@ -232,7 +232,7 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
         raw_data = struct.unpack('>BBH' + self.get_arguments_format() + 'B',
                 frame)
         self.protocol_id = raw_data[0]
-        self.klf_command = raw_data[1]
+        self.klf_command = raw_data[2]
         self.raw_arguments = raw_data[3:-1]
 
 class GetAllNodesInformationNtf(KlfGwResponse):
@@ -273,7 +273,11 @@ class PasswordEnterReq(KlfGwRequest):
 
 class PasswordEnterCfm(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_ENTER_CFM
-    arguments_format = ''
+    arguments_format = 'B'
+
+    def __init__(self, frame):
+        super().__init__(frame)
+        self.status = self.raw_arguments[0]
 
 class GetStateReq(KlfGwRequest):
     klf_command = commands.GW_GET_STATE_REQ
