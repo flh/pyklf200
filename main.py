@@ -7,7 +7,7 @@ def toHex(s):
     return ":".join("{:02x}".format(c) for c in s)
 
 def main():
-    klf_server = KlfServer('klf_ip', 'klf_password')
+    klf_server = KlfServer('klf_ip', b'klf_password')
     klf_server.connect()
     klf_server.enter_password()
 
