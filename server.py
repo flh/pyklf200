@@ -87,10 +87,10 @@ class KlfServer:
         """
         context = ssl.SSLContext()
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setblocking(False)
         self.klf_socket = context.wrap_socket(sock,
                 server_hostname=self.klf_address)
         self.klf_socket.connect((self.klf_address, self.klf_port))
+        self.klf_socket.setblocking(False)
 
     def send_message(self, message):
         """
