@@ -118,10 +118,10 @@ class KlfGwRequest(KlfGwMessage):
 
     def __bytes__(self):
         command_frame = struct.pack('>H', self.klf_command)
-        command_frame += b''.join(map(lambda arg_format, arg_value:
-                struct.pack('>' + arg_format, arg_value)
-                  if arg_format is not None
-                  else arg_value, self.get_arguments()))
+        command_frame += b''.join(map(lambda arg_line:
+                struct.pack('>' + arg_line[0], arg_line[1])
+                  if arg_line[0] is not None
+                  else arg_line[1], self.get_arguments()))
 
         command_length_frame = struct.pack('>B', len(command_frame) +
                 3) + command_frame
