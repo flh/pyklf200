@@ -135,7 +135,7 @@ class KlfGwRequest(KlfGwMessage):
                   else arg_line[1], self.get_arguments()))
 
         command_length_frame = struct.pack('>B', len(command_frame) +
-                3) + command_frame
+                1) + command_frame
 
         protocol_frame = struct.pack('>B', self.protocol_id) + \
                 command_length_frame
