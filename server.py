@@ -248,7 +248,7 @@ class PasswordEnterReq(KlfGwRequest):
         self.password = password
 
     def get_arguments(self):
-        return (('31sx', bytes(self.password)))
+        return (('31sx', bytes(self.password)),)
 
 class PasswordEnterCfm(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_ENTER_CFM
