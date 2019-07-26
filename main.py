@@ -4,9 +4,6 @@ from server import KlfServer
 import selectors
 import logging
 
-def toHex(s):
-    return ":".join("{:02x}".format(c) for c in s)
-
 def main():
     logging.basicConfig(format='%(asctime)s %(message)s',
             level=logging.DEBUG)
@@ -34,7 +31,7 @@ def main():
                 responses = klf_server.recvall()
                 logging.debug("Got {} frames from the gateway".format(len(responses)))
                 for resp in responses:
-                    print(toHex(resp))
+                    print(resp)
 
 if __name__ == '__main__':
     main()

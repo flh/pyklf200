@@ -279,6 +279,15 @@ class PasswordEnterCfm(KlfGwResponse):
         super().__init__(frame)
         self.status = self.raw_arguments[0]
 
+    def __str__(self):
+        if self.status == 1:
+            str_status = "authentication failure"
+        else:
+            str_status = "authentication success"
+        return "{class_name}: {status}".format(
+                class_name=type(self).__name__,
+                status=str_status)
+
 class GetStateReq(KlfGwRequest):
     klf_command = commands.GW_GET_STATE_REQ
 
