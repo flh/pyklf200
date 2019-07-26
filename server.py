@@ -56,7 +56,7 @@ class KlfServer:
                         self.input_state = self.INPUT_STATE_ESC
                     else:
                         logging.debug("Frame parser: regular byte")
-                        self.input_buffer += bytes(c)
+                        self.input_buffer += bytes([c])
 
                 elif self.input_state == self.INPUT_STATE_ESC:
                     self.input_state = self.INPUT_STATE_FRAME
