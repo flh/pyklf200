@@ -201,7 +201,10 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
     Each subclass should define a klf_command attribute.
     """
     def get_arguments_format(self):
-        return self.arguments_format
+        try:
+            return self.arguments_format
+        except AttributeError:
+            return None
 
     def expected_data_length(self):
         return struct.calcsize(self.get_arguments_format())
@@ -229,8 +232,15 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
         return klf_response
 
     def __init__(self, frame):
-        raw_data = struct.unpack('>BBH' + self.get_arguments_format() + 'B',
-                frame)
+        self.raw_frame = frame
+
+        arguments_format = self.get_arguments_format()
+        if arguments_format is not None:
+            raw_data = struct.unpack('>BBH' + arguments_format + 'B',
+                    frame)
+        else:
+            raw_data = struct.unpack('>BBH', frame[:4])
+
         self.protocol_id = raw_data[0]
         self.klf_command = raw_data[2]
         self.raw_arguments = raw_data[3:-1]
