@@ -28,11 +28,13 @@ class KlfServer:
         while True:
             try:
                 data = self.klf_socket.recv(4096)
-            except (BlockingIOError, ssl.WantReadError):
+            except (BlockingIOError, ssl.SSLWantReadError):
                 logging.debug("No more data to receive from the socket gateway")
                 # TODO
                 break
 
+            logging.debug("Parsing received data: {data}".format(
+                data=toHex(data)))
             for c in data:
                 if self.input_state == self.INPUT_STATE_INIT:
                     if c == self.SLIP_END:

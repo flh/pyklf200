@@ -29,7 +29,7 @@ def main():
 
         for key, mask in events:
             logging.debug("Selector got an event from key {key}".format(key=key))
-            if key == klf_server:
+            if key.fileobj == klf_server:
                 logging.debug("Handling data from the gateway")
                 responses = klf_server.recvall()
                 logging.debug("Got {} frames from the gateway".format(len(responses)))
