@@ -121,7 +121,7 @@ class KlfGwRequest(KlfGwMessage):
         command_frame += b''.join(map(lambda arg_format, arg_value:
                 struct.pack('>' + arg_format, arg_value)
                   if arg_format is not None
-                  else arg_value))
+                  else arg_value, self.get_arguments()))
 
         command_length_frame = struct.pack('>B', len(command_frame) +
                 3) + command_frame
