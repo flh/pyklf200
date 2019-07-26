@@ -96,7 +96,7 @@ class KlfServer:
         self.klf_socket.send(self.slip_pack(bytes(message)))
 
     def enter_password(self):
-        self.send_message(PasswordEnterReq(self.password))
+        self.send_message(PasswordEnterReq(self.klf_password))
 
     def ping(self):
         self.send_message(GetStateReq())
@@ -248,10 +248,7 @@ class PasswordEnterReq(KlfGwRequest):
         self.password = password
 
     def get_arguments(self):
-        return ((None, self.password))
-
-    def __bytes__(self):
-        return struct.pack('>H', )
+        return (('31sx', bytes(self.password)))
 
 class PasswordEnterCfm(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_ENTER_CFM

@@ -9,7 +9,7 @@ def toHex(s):
 def main():
     klf_server = KlfServer('klf_ip', 'klf_password')
     klf_server.connect()
-    klf_server.send_password()
+    klf_server.enter_password()
 
     selector = selectors.DefaultSelector()
     selector.register(klf_server, selectors.EVENT_READ)
