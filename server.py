@@ -52,16 +52,16 @@ class KlfServer:
 
         return seen_frames
 
-    @staticmethod
-    def slip_pack(inputFrame):
+    @classmethod
+    def slip_pack(cls, inputFrame):
         """
         Encode data in a SLIP (RFC1055) frame and return the packed
         bytes.
         """
         data = inputFrame
-        data = data.replace(self.SLIP_ESC, self.SLIP_ESC + self.SLIP_ESC_ESC)
-        data = data.replace(self.SLIP_END, self.SLIP_ESC + self.SLIP_ESC_END)
-        return self.SLIP_END + data + self.SLIP_END
+        data = data.replace(cls.SLIP_ESC, cls.SLIP_ESC + cls.SLIP_ESC_ESC)
+        data = data.replace(cls.SLIP_END, cls.SLIP_ESC + cls.SLIP_ESC_END)
+        return cls.SLIP_END + data + cls.SLIP_END
 
     def __init__(self, address, password, port=51200):
         self.klf_address = address
