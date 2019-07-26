@@ -5,6 +5,7 @@ import ssl
 import struct
 from functools import reduce
 from operator import xor
+import logging
 
 import commands
 
@@ -25,6 +26,7 @@ class KlfServer:
             try:
                 data = self.klf_socket.recv(4096)
             except (BlockingIOError, ssl.WantReadError):
+                logging.debug("No more data to receive from the socket gateway")
                 # TODO
                 break
 
