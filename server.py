@@ -9,6 +9,9 @@ import logging
 
 import commands
 
+def toHex(s):
+    return ":".join("{:02x}".format(c) for c in s)
+
 class KlfServer:
     INPUT_STATE_INIT = 0
     INPUT_STATE_FRAME = 1
@@ -98,8 +101,8 @@ class KlfServer:
         """
         frame = self.slip_pack(bytes(message))
         len_sent = self.klf_socket.sendall(frame)
-        logging.debug("Sent frame: {frame} ({len_sent} bytes sent)".format(
-            frame=frame, len_sent=len_sent))
+        logging.debug("Sent frame: {frame}".format(
+            frame=toHex(frame)))
 
     def enter_password(self):
         logging.info("Sending authentication data to the gateway")
