@@ -77,7 +77,7 @@ class KlfServer:
         Return the file descriptor associated to the socket which
         communicates with the gateway.
         """
-        return self.klf_socket
+        return self.klf_socket.fileno()
 
     def connect(self):
         """
