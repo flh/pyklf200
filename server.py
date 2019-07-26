@@ -36,6 +36,8 @@ class KlfServer:
             logging.debug("Parsing received data: {data}".format(
                 data=toHex(data)))
             for c in data:
+                logging.debug("Frame parser: handling byte {byte} in state {state}".format(
+                    byte=c, state=self.input_state))
                 if self.input_state == self.INPUT_STATE_INIT:
                     if c == self.SLIP_END:
                         logging.debug("Frame parser: new frame start")
