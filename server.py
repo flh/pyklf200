@@ -38,16 +38,22 @@ class KlfServer:
             for c in data:
                 if self.input_state == self.INPUT_STATE_INIT:
                     if c == self.SLIP_END:
+                        logging.debug("Frame parser: new frame start")
                         self.input_state = self.INPUT_STATE_FRAME
 
                 elif self.input_state == self.INPUT_STATE_FRAME:
                     if c == self.SLIP_END:
+                        logging.debug("Frame parser: frame end")
+                        logging.debug("Frame parser: frame content: {}".format(
+                            toHex(self.input_buffer)))
                         self.input_state = self.INPUT_STATE_INIT
                         seen_frames.append(KlfGwResponse(self.input_buffer))
                         self.input_buffer = b''
                     elif c == self.SLIP_ESC:
+                        logging.debug("Frame parser: escape sequence")
                         self.input_state = self.INPUT_STATE_ESC
                     else:
+                        logging.debug("Frame parser: regular byte")
                         self.input_buffer += c
 
                 elif self.input_state == self.INPUT_STATE_ESC:
