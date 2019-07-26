@@ -8,6 +8,8 @@ def toHex(s):
     return ":".join("{:02x}".format(c) for c in s)
 
 def main():
+    logging.basicConfig(format='%(asctime)s %(message)s',
+            level=logging.DEBUG)
     logging.debug("Here we go!")
     klf_server = KlfServer('klf_ip', b'klf_password')
     klf_server.connect()

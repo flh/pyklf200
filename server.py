@@ -96,12 +96,17 @@ class KlfServer:
         """
         Send a message to the gateway.
         """
-        self.klf_socket.send(self.slip_pack(bytes(message)))
+        frame = self.slip_pack(bytes(message))
+        len_sent = self.klf_socket.sendall(frame)
+        logging.debug("Sent frame: {frame} ({len_sent} bytes sent)".format(
+            frame=frame, len_sent=len_sent))
 
     def enter_password(self):
+        logging.info("Sending authentication data to the gateway")
         self.send_message(PasswordEnterReq(self.klf_password))
 
     def ping(self):
+        logging.info("Sending ping request to the gateway")
         self.send_message(GetStateReq())
 
 class KlfGwMessage:
