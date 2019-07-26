@@ -28,6 +28,7 @@ def main():
             klf_server.ping()
 
         for key, mask in events:
+            logging.debug("Selector got an event from key {key}".format(key=key))
             if key == klf_server:
                 logging.debug("Handling data from the gateway")
                 responses = klf_server.recvall()
