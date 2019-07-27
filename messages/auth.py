@@ -16,8 +16,7 @@ class PasswordEnterCfm(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_ENTER_CFM
     arguments_format = 'B'
 
-    def __init__(self, frame):
-        super().__init__(frame)
+    def fill_arguments(self):
         self.status = self.raw_arguments[0]
         self.is_success = self.status == 0
 
@@ -48,8 +47,7 @@ class PasswordChangeCfm(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_CHANGE_CFM
     arguments_format = 'B'
 
-    def __init__(self, frame):
-        super().__init__(frame)
+    def fill_arguments(self):
         self.status = self.raw_arguments[0]
         self.is_success = self.status == 0
 
@@ -57,6 +55,5 @@ class PasswordChangeNtf(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_CHANGE_NTF
     arguments_format = '31sx'
 
-    def __init__(self, frame):
-        super().__init__(frame)
+    def fill_arguments(self):
         self.new_password = self.raw_arguments[0]

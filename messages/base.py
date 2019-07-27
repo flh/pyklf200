@@ -122,3 +122,8 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
         self.protocol_id = raw_data[0]
         self.klf_command = raw_data[2]
         self.raw_arguments = raw_data[3:-1]
+
+        self.fill_arguments()
+
+    def fill_arguments(self):
+        pass

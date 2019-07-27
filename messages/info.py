@@ -13,9 +13,7 @@ class GetAllNodesInformationNtf(KlfGwResponse):
     klf_command = commands.GW_GET_ALL_NODES_INFORMATION_NTF
     arguments_format = 'BHB64sBHBBBBB8sBHHHHHHHLB5L'
 
-    def __init__(self, frame):
-        super().__init__(frame)
-
+    def fill_arguments(self):
         self.node_id = self.raw_arguments[0]
         self.order = self.raw_arguments[1]
         self.placement = self.raw_arguments[2]
