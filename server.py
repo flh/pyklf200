@@ -11,6 +11,13 @@ import logging
 def toHex(s):
     return ":".join("{:02x}".format(c) for c in s)
 
+class KlfBlockingIOError(BlockingIOError):
+    """
+    Exception raised when received bytes from the gateway are
+    insufficient to parse a full command frame.
+    """
+    pass
+
 class KlfServer:
     INPUT_STATE_INIT = 0
     INPUT_STATE_FRAME = 1
@@ -22,47 +29,74 @@ class KlfServer:
     SLIP_ESC_END = b'\xDC'
     SLIP_ESC_ESC = b'\xDD'
 
-    def recvall(self):
+    def recv(self):
+        """
+        Read and decode frames received from the gateway.
+
+        This method returns a list of KlfGwResponse instances, which
+        represent frames received from the gateway.
+
+        When the network socket operates in non-blocking mode, this
+        method may still raise a KlfBlockingIOError even if it was
+        called after a select. This happens when we receive an
+        insufficient amount of bytes to parse a single full frame. In
+        such cases, the caller should catch the exception and retry
+        after another select on the socket.
+        """
         seen_frames = []
-        while True:
-            try:
-                data = self.klf_socket.recv(4096)
-            except (BlockingIOError, ssl.SSLWantReadError):
-                logging.debug("No more data to receive from the socket gateway")
-                # TODO
-                break
+        try:
+            # The length of a KLF200 frame is at most 255 bytes. Since
+            # it is encoded using SLIP, the whole SLIP frame length is
+            # at most:
+            # 512 bytes = 1 (initial SLIP END)
+            #             + 255 * 2 (characters all SLIP escaped)
+            #             + 1 (final SLIP END)
+            data = self.klf_socket.recv(4096)
+        except (BlockingIOError, ssl.SSLWantReadError):
+            logging.info("No more data to receive from the gateway socket")
+            raise KlfBlockingIOError()
 
-            logging.debug("Parsing received data: {data}".format(
-                data=toHex(data)))
-            for c in data:
-                logging.debug("Frame parser: handling byte {byte} in state {state}".format(
-                    byte=c, state=self.input_state))
-                if self.input_state == self.INPUT_STATE_INIT:
-                    if c == self.SLIP_END[0]:
-                        logging.debug("Frame parser: new frame start")
-                        self.input_state = self.INPUT_STATE_FRAME
+        # Detect when the socket has been closed on the remote side
+        if data == '':
+            logging.debug("Socket has been closed by the gateway")
+            return []
 
-                elif self.input_state == self.INPUT_STATE_FRAME:
-                    if c == self.SLIP_END[0]:
-                        logging.debug("Frame parser: frame end")
-                        logging.debug("Frame parser: frame content: {}".format(
-                            toHex(self.input_buffer)))
-                        self.input_state = self.INPUT_STATE_INIT
-                        seen_frames.append(KlfGwResponse(self.input_buffer))
-                        self.input_buffer = b''
-                    elif c == self.SLIP_ESC[0]:
-                        logging.debug("Frame parser: escape sequence")
-                        self.input_state = self.INPUT_STATE_ESC
-                    else:
-                        logging.debug("Frame parser: regular byte")
-                        self.input_buffer += bytes([c])
-
-                elif self.input_state == self.INPUT_STATE_ESC:
+        logging.debug("Parsing received data: {data}".format(
+            data=toHex(data)))
+        for c in data:
+            logging.debug("Frame parser: handling byte {byte} in state {state}".format(
+                byte=c, state=self.input_state))
+            if self.input_state == self.INPUT_STATE_INIT:
+                if c == self.SLIP_END[0]:
+                    logging.debug("Frame parser: new frame start")
                     self.input_state = self.INPUT_STATE_FRAME
-                    if c == self.SLIP_ESC_END[0]:
-                        self.input_buffer += self.SLIP_END
-                    elif c == self.SLIP_ESC_ESC[0]:
-                        self.input_buffer += self.SLIP_ESC
+
+            elif self.input_state == self.INPUT_STATE_FRAME:
+                if c == self.SLIP_END[0]:
+                    logging.debug("Frame parser: frame end")
+                    logging.debug("Frame parser: frame content: {}".format(
+                        toHex(self.input_buffer)))
+                    self.input_state = self.INPUT_STATE_INIT
+                    seen_frames.append(KlfGwResponse(self.input_buffer))
+                    self.input_buffer = b''
+                elif c == self.SLIP_ESC[0]:
+                    logging.debug("Frame parser: escape sequence")
+                    self.input_state = self.INPUT_STATE_ESC
+                else:
+                    logging.debug("Frame parser: regular byte")
+                    self.input_buffer += bytes([c])
+
+            elif self.input_state == self.INPUT_STATE_ESC:
+                self.input_state = self.INPUT_STATE_FRAME
+                if c == self.SLIP_ESC_END[0]:
+                    self.input_buffer += self.SLIP_END
+                elif c == self.SLIP_ESC_ESC[0]:
+                    self.input_buffer += self.SLIP_ESC
+
+        # If we received less than a single full frame, we raise an
+        # exception to tell that more bytes are needed.
+        if seen_frames == []:
+            raise KlfBlockingIOError()
 
         return seen_frames
 
@@ -102,7 +136,9 @@ class KlfServer:
         self.klf_socket = context.wrap_socket(sock,
                 server_hostname=self.klf_address)
         self.klf_socket.connect((self.klf_address, self.klf_port))
-        self.klf_socket.setblocking(False)
+
+    def setblocking(self, blocking):
+        self.klf_socket.setblocking(blocking)
 
     def send_message(self, message):
         """
