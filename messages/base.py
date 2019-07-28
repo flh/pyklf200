@@ -127,3 +127,23 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
 
     def fill_arguments(self):
         pass
+
+class KlfStatusMixin:
+    arguments_format = 'B'
+
+    def fill_arguments(self):
+        self.status = self.raw_arguments[0]
+
+class KlfSuccessZeroMixin(KlfStatusMixin):
+    arguments_format = 'B'
+
+    def fill_arguments(self):
+        super().fill_arguments()
+        self.is_success = self.status == 0
+
+class KlfSuccessOneMixin(KlfStatusMixin):
+    arguments_format = 'B'
+
+    def fill_arguments(self):
+        super().fill_arguments()
+        self.is_success = self.status == 1

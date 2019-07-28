@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import commands
-from base import KlfGwResponse, KlfGwRequest
+from base import KlfGwResponse, KlfGwRequest, KlfSuccessZeroMixin
 
 class PasswordEnterReq(KlfGwRequest):
     klf_command = commands.GW_PASSWORD_ENTER_REQ
@@ -12,13 +12,8 @@ class PasswordEnterReq(KlfGwRequest):
     def get_arguments(self):
         return (('31sx', bytes(self.password)),)
 
-class PasswordEnterCfm(KlfGwResponse):
+class PasswordEnterCfm(KlfSuccessZeroMixin, KlfGwResponse):
     klf_command = commands.GW_PASSWORD_ENTER_CFM
-    arguments_format = 'B'
-
-    def fill_arguments(self):
-        self.status = self.raw_arguments[0]
-        self.is_success = self.status == 0
 
     def __str__(self):
         if self.is_success:
@@ -43,13 +38,8 @@ class PasswordChangeReq(KlfGwRequest):
             ('31sx', bytes(self.new_password)),
         )
 
-class PasswordChangeCfm(KlfGwResponse):
+class PasswordChangeCfm(KlfSuccessZeroMixin, KlfGwResponse):
     klf_command = commands.GW_PASSWORD_CHANGE_CFM
-    arguments_format = 'B'
-
-    def fill_arguments(self):
-        self.status = self.raw_arguments[0]
-        self.is_success = self.status == 0
 
 class PasswordChangeNtf(KlfGwResponse):
     klf_command = commands.GW_PASSWORD_CHANGE_NTF
