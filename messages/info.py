@@ -3,22 +3,6 @@
 import commands
 from base import KlfGwResponse, KlfGwRequest
 
-class GetVersionReq(KlfGwRequest):
-    klf_command = commands.GW_GET_VERSION_REQ
-    arguments_format = ''
-
-class GetVersionCfm(KlfGwResponse):
-    klf_command = commands.GW_GET_VERSION_CFM
-    arguments_format = '6sBBB'
-
-    def fill_arguments(self):
-        self.software_version = self.raw_arguments[0]
-        self.hardware_version = self.raw_arguments[1]
-        # Velux technical doc states that product_group should always be 14.
-        self.product_group = self.raw_arguments[2]
-        # Velux technical doc states that product_type should always be 3.
-        self.product_type = self.raw_arguments[3]
-
 class GetAllNodesInformation(KlfGwRequest):
     klf_command = commands.GW_GET_ALL_NODES_INFORMATION_REQ
 
