@@ -130,9 +130,10 @@ class KlfGwResponse(KlfGwMessage, metaclass=KlfGwResponseMetaclass):
 
 class KlfStatusMixin:
     arguments_format = 'B'
+    status_position = 0
 
     def fill_arguments(self):
-        self.status = self.raw_arguments[0]
+        self.status = self.raw_arguments[self.status_position]
 
 class KlfSuccessZeroMixin(KlfStatusMixin):
     arguments_format = 'B'
