@@ -1,3 +1,4 @@
+#!env python3
 # -*- coding: utf-8 -*-
 
 from client import KlfClient
@@ -15,7 +16,7 @@ async def connect_klf_client(address, password):
     # The gateway certificate is self-signed.
     ssl_context.verify_mode = ssl.CERT_NONE
 
-    (klf_client, klf_transport) = await loop.create_connection(
+    (klf_transport, klf_client) = await loop.create_connection(
             lambda: KlfClient(loop),
             host=address, port=51200, ssl=ssl_context)
     if await klf_client.authenticate(password):
