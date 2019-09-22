@@ -88,14 +88,14 @@ class RestClientConnection(asyncio.Protocol):
         """
         await self.klf_client.send(messages.info.GetAllNodesInformationReq())
 
-        information_ntf = self.klf_client.get_response(messages.GetAllNodesInformationNtf)
-        finished_ntf = self.klf_client.get_response(messages.GetAllNodesInformationFinishedNtf)
+        information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
+        finished_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationFinishedNtf)
         event = None
         klf_nodes = []
         while event != finished_ntf:
             event, _ = await asyncio.wait((information_ntf, finished_ntf))
             if event == information_ntf:
-                information_ntf = self.klf_client.get_response(messages.GetAllNodesInformationNtf)
+                information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
                 node_info = event.result()
                 klf_nodes.append({
                     'id': node_info.node_id,
