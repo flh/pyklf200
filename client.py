@@ -105,6 +105,7 @@ class KlfClient(asyncio.Protocol):
     def __init__(self, loop):
         super().__init__()
         self.loop = loop
+        self.heartbeat_handler = loop.call_later(10 * 60, self.ping)
 
     def connection_made(self, transport):
         self.transport = transport
