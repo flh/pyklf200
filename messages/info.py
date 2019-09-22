@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import commands
-from base import KlfGwResponse, KlfGwRequest
+from . import commands
+from .base import KlfGwResponse, KlfGwRequest
 
 class GetAllNodesInformation(KlfGwRequest):
     klf_command = commands.GW_GET_ALL_NODES_INFORMATION_REQ
