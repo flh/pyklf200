@@ -95,7 +95,8 @@ class RestClientConnection(asyncio.Protocol):
         klf_nodes = []
         logging.info("Waiting for all nodes information")
         while event != finished_ntf:
-            event, _ = await asyncio.wait((information_ntf, finished_ntf))
+            event, _ = await asyncio.wait((information_ntf, finished_ntf),
+                    return_when=asyncio.FIRST_COMPLETED)
             if event == information_ntf:
                 logging.info("Got one frame in response to all nodes information")
                 information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
