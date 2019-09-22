@@ -115,6 +115,10 @@ class KlfClient(asyncio.Protocol):
         self.loop = loop
         self.heartbeat_handler = loop.call_later(10 * 60, self.ping)
 
+    def reschedule_heartbeat(self):
+        self.heartbeat_handler.cancel()
+        self.heartbeat_handler = self.loop.call_later(10 * 60, self.ping)
+
     def connection_made(self, transport):
         self.transport = transport
         self.klf_connection = KlfConnection()
@@ -147,6 +151,7 @@ class KlfClient(asyncio.Protocol):
     def send(self, message):
         future = self.get_response(KlfClient.get_cfm_type(message))
         self.transport.write(self.klf_connection.send(message))
+        self.reschedule_heartbeat()
         return future
 
     def authenticate(self, password):
