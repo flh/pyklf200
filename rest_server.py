@@ -109,7 +109,7 @@ class RestClientConnection(asyncio.Protocol):
                 elif event == finished_ntf:
                     logging.info("Got final frame in response to all nodes information")
                     information_ntf.cancel()
-                    finished_event = information_ntf
+                    finished_event = finished_ntf
 
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
