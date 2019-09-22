@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import commands
-from base import KlfGwResponse, KlfGwRequest, KlfSuccessZeroMixin
+from . import commands
+from .base import KlfGwResponse, KlfGwRequest, KlfSuccessZeroMixin
 
 class PasswordEnterReq(KlfGwRequest):
     klf_command = commands.GW_PASSWORD_ENTER_REQ
@@ -17,9 +17,9 @@ class PasswordEnterCfm(KlfSuccessZeroMixin, KlfGwResponse):
 
     def __str__(self):
         if self.is_success:
-            str_status = "authentication failure"
-        else:
             str_status = "authentication success"
+        else:
+            str_status = "authentication failure"
 
         return "{class_name}: {status}".format(
                 class_name=type(self).__name__,

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import commands
-from base import KlfGwResponse, KlfGwRequest, KlfSuccessOneMixin
+from . import commands
+from .base import KlfGwResponse, KlfGwRequest, KlfSuccessOneMixin
 from datetime import datetime
 
 class GetVersionReq(KlfGwRequest):
@@ -78,7 +78,7 @@ class RtcSetTimeZoneReq(KlfGwRequest):
         raise NotImplemented
 
 class SetTimeZoneCfm(KlfSuccessOneMixin, KlfGwResponse):
-    klf_command = commands.GW_SET_TIME_ZONE_CFM
+    klf_command = commands.GW_RTC_SET_TIME_ZONE_CFM
 
 class GetLocalTimeReq(KlfGwRequest):
     klf_command = commands.GW_GET_LOCAL_TIME_REQ

@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import struct
+from functools import reduce
+from operator import xor
+
 class KlfGwMessage:
     """
     Base class representing any message, sent to the KLF200 gateway or

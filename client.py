@@ -3,13 +3,14 @@
 import socket
 import ssl
 import struct
-from functools import reduce
-from operator import xor
 import logging
 import messages.auth
 import messages.general
 import asyncio
 import inspect
+import re
+
+from messages.base import KlfGwResponse
 
 def toHex(s):
     return ":".join("{:02x}".format(c) for c in s)
@@ -97,7 +98,7 @@ class KlfConnection:
         Format a message so that it can be sent to the gateway.
         """
         logging.debug("Sent frame: {frame}".format(
-            frame=toHex(frame)))
+            frame=toHex(bytes(message))))
         return self.slip_pack(bytes(message))
 
 class KlfClient(asyncio.Protocol):
@@ -124,7 +125,7 @@ class KlfClient(asyncio.Protocol):
                             yield list.pop(0)
                         except IndexError:
                             break
-                for future in iter_and_remove(self.futures.get(event, [])):
+                for future in iter_and_remove(self.futures.get(type(event), [])):
                     future.set_result(event)
 
     def get_response(self, response_type):
@@ -139,7 +140,7 @@ class KlfClient(asyncio.Protocol):
 
     def send(self, message):
         future = self.get_response(KlfClient.get_cfm_type(message))
-        self.transport.send(self.klf_connection.send(message))
+        self.transport.write(self.klf_connection.send(message))
         return future
 
     def authenticate(self, password):
