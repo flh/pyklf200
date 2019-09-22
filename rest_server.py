@@ -4,7 +4,7 @@ import json
 import re
 import h11
 import asyncio
-import messages
+import messages.info
 
 class RestClientConnection(asyncio.Protocol):
     """
@@ -85,7 +85,7 @@ class RestClientConnection(asyncio.Protocol):
         Request for actuator information. When node_id is None, the full
         list of actuators is returned.
         """
-        await self.klf_client.send(messages.GetAllNodesInformationReq())
+        await self.klf_client.send(messages.info.GetAllNodesInformationReq())
 
         information_ntf = self.klf_client.get_response(messages.GetAllNodesInformationNtf)
         finished_ntf = self.klf_client.get_response(messages.GetAllNodesInformationFinishedNtf)
