@@ -6,13 +6,14 @@ import h11
 import asyncio
 import messages
 
-class RestClientConnection:
+class RestClientConnection(asyncio.Protocol):
     """
     Client connection handling. One should instance a new object for
     each client connection then call the run coroutine which will handle
     client requests.
     """
     def __init__(self, reader, writer, klf_client):
+        logging.info("Client connected to the REST server")
         self.reader = reader
         self.writer = writer
         self.klf_client = klf_client

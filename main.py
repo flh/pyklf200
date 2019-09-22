@@ -29,8 +29,7 @@ async def connect_klf_client(address, password):
 
 async def connect_rest_server(klf_client):
     logging.info("Starting REST server")
-    loop = asyncio.get_running_loop()
-    rest_server = await loop.create_server(lambda reader, writer:
+    rest_server = await asyncio.create_server(lambda reader, writer:
             RestClientConnection(reader, writer, klf_client).run(),
             '', 52280)
     logging.info("REST server waiting for incoming connections")
@@ -44,7 +43,8 @@ async def main():
     klf_client = await connect_klf_client('klf_ip', b'klf_password')
     rest_server = await connect_rest_server(klf_client)
 
-    await rest_server.serve_forever()
+    async with rest_server:
+        await rest_server.serve_forever()
 
 if __name__ == '__main__':
     asyncio.run(main())
