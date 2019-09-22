@@ -3,11 +3,19 @@
 from . import commands
 from .base import KlfGwResponse, KlfGwRequest
 
-class GetAllNodesInformation(KlfGwRequest):
+class GetAllNodesInformationReq(KlfGwRequest):
     klf_command = commands.GW_GET_ALL_NODES_INFORMATION_REQ
 
     def get_arguments(self):
         return ()
+
+class GetAllNodesInformationCfm(KlfSuccessZeroMixin, KlfGwResponse):
+    klf_command = commands.GW_GET_ALL_NODES_INFORMATION_CFM
+    arguments_format = 'BB'
+
+    def fill_arguments(self):
+        super().fill_arguments()
+        self.total_nodes = self.raw_arguments[1]
 
 class GetAllNodesInformationNtf(KlfGwResponse):
     klf_command = commands.GW_GET_ALL_NODES_INFORMATION_NTF
