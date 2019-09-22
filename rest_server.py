@@ -48,15 +48,15 @@ class RestClientConnection(asyncio.Protocol):
             if self.connection.our_state is h11.MUST_CLOSE:
                 self.writer.close()
                 await self.writer.wait_closed()
-            # TODO when should we exit the main loop?
+                return
 
     async def write_simple_response(self, status_code=200, reason=b'OK',
             headers=(), body={}):
-        data = h11.Data(json.dumps(body).encode('utf-8'))
+        data = h11.Data(data=json.dumps(body).encode('utf-8'))
         response = h11.Response(status_code=status_code,
                 headers=headers + (
                     ('Content-type', 'application/json; encoding=utf-8'),
-                    ('Content-length', len(data)),
+                    ('Content-length', str(len(data.data))),
                 ), reason=reason)
         self.writer.write(self.connection.send(response) + self.connection.send(data) +
                 self.connection.send(h11.EndOfMessage()))
