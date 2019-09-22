@@ -4,6 +4,7 @@ import json
 import re
 import h11
 import asyncio
+import logging
 import messages.info
 
 class RestClientConnection(asyncio.Protocol):
