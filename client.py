@@ -6,8 +6,10 @@ import struct
 from functools import reduce
 from operator import xor
 import logging
-import messages
+import messages.auth
+import messages.general
 import asyncio
+import inspect
 
 def toHex(s):
     return ":".join("{:02x}".format(c) for c in s)
@@ -132,10 +134,11 @@ class KlfClient(asyncio.Protocol):
 
     @staticmethod
     def get_cfm_type(request):
-        return messages.__dict__[re.sub(r'Req$', 'Cfm', type(request))]
+        kls = type(request)
+        return getattr(inspect.getmodule(kls), re.sub(r'Req$', 'Cfm', kls.__name__))
 
     def send(self, message):
-        future = self.get_reponse(KlfClient.get_cfm_type(message))
+        future = self.get_response(KlfClient.get_cfm_type(message))
         self.transport.send(self.klf_connection.send(message))
         return future
 
