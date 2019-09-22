@@ -82,6 +82,14 @@ class KlfConnection:
         except IndexError:
             return None
 
+    def iter_events(self):
+        while True:
+            event = self.next_event()
+            if event is not None:
+                yield event
+            else:
+                break
+
     @classmethod
     def slip_pack(cls, inputFrame):
         """
@@ -114,12 +122,9 @@ class KlfClient(asyncio.Protocol):
 
     def data_received(self, data):
         self.klf_connection.receive_data(data)
-        while True:
-            event = self.klf_connection.next_event()
-            if event is None:
-                break
+        for event in self.klf_connection.iter_events():
             # TODO handle KlfErrorNtf
-            elif isinstance(event, KlfGwResponse):
+            if isinstance(event, KlfGwResponse):
                 def iter_and_remove(list):
                     while True:
                         try:
