@@ -70,7 +70,7 @@ class RestClientConnection(asyncio.Protocol):
 
     async def handle_GET(self, request):
         actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
-                request.path)
+                request.target)
         if actuator_match is not None:
             await self.actuator_GET(node_id=actuator_match.group('node_id'))
 
