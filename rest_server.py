@@ -86,15 +86,18 @@ class RestClientConnection(asyncio.Protocol):
         Request for actuator information. When node_id is None, the full
         list of actuators is returned.
         """
+        logging.info("Asking all nodes information to the KLF gateway")
         await self.klf_client.send(messages.info.GetAllNodesInformationReq())
 
         information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
         finished_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationFinishedNtf)
         event = None
         klf_nodes = []
+        logging.info("Waiting for all nodes information")
         while event != finished_ntf:
             event, _ = await asyncio.wait((information_ntf, finished_ntf))
             if event == information_ntf:
+                logging.info("Got one frame in response to all nodes information")
                 information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
                 node_info = event.result()
                 klf_nodes.append({
@@ -102,6 +105,7 @@ class RestClientConnection(asyncio.Protocol):
                     'name': node_info.name,
                     })
             elif event == finished_ntf:
+                logging.info("Got final frame in response to all nodes information")
                 information_ntf.cancel()
 
         # Response to the HTTP request
