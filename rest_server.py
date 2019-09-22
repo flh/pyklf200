@@ -91,23 +91,25 @@ class RestClientConnection(asyncio.Protocol):
         finished_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationFinishedNtf)
         await self.klf_client.send(messages.info.GetAllNodesInformationReq())
 
-        event = None
+        finished_event = None
         klf_nodes = []
         logging.info("Waiting for all nodes information")
-        while event != finished_ntf:
-            event, _ = await asyncio.wait((information_ntf, finished_ntf),
+        while finished_event != finished_ntf:
+            events, _ = await asyncio.wait((information_ntf, finished_ntf),
                     return_when=asyncio.FIRST_COMPLETED)
-            if event == information_ntf:
-                logging.info("Got one frame in response to all nodes information")
-                information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
-                node_info = event.result()
-                klf_nodes.append({
-                    'id': node_info.node_id,
-                    'name': node_info.name,
-                    })
-            elif event == finished_ntf:
-                logging.info("Got final frame in response to all nodes information")
-                information_ntf.cancel()
+            for event in events:
+                if event == information_ntf:
+                    logging.info("Got one frame in response to all nodes information")
+                    information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
+                    node_info = event.result()
+                    klf_nodes.append({
+                        'id': node_info.node_id,
+                        'name': node_info.name,
+                        })
+                elif event == finished_ntf:
+                    logging.info("Got final frame in response to all nodes information")
+                    information_ntf.cancel()
+                    finished_event = information_ntf
 
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
