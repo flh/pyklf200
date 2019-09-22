@@ -87,10 +87,10 @@ class RestClientConnection(asyncio.Protocol):
         list of actuators is returned.
         """
         logging.info("Asking all nodes information to the KLF gateway")
-        await self.klf_client.send(messages.info.GetAllNodesInformationReq())
-
         information_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationNtf)
         finished_ntf = self.klf_client.get_response(messages.info.GetAllNodesInformationFinishedNtf)
+        await self.klf_client.send(messages.info.GetAllNodesInformationReq())
+
         event = None
         klf_nodes = []
         logging.info("Waiting for all nodes information")
