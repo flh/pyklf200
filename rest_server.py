@@ -69,13 +69,13 @@ class RestClientConnection(asyncio.Protocol):
                 body={'status': 'error', 'reason': 'HTTP method not allowed'})
 
     async def handle_GET(self, request):
-        actuator_match = re.match(b'/actuators/(?:(?P<node_id>\d+)/)?$',
+        actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
                 request.path)
         if actuator_match is not None:
             await self.actuator_GET(node_id=actuator_match.group('node_id'))
 
     async def handle_POST(self, request):
-        actuator_match = re.match(b'/actuators/(?:(?P<node_id>\d+)/)?$',
+        actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
                 request.path)
         if actuator_match is not None:
             await self.actuator_POST(node_id=actuator_match.group('node_id'))
