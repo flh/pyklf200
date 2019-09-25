@@ -97,6 +97,9 @@ class RestClientConnection(asyncio.Protocol):
         if actuator_match is not None:
             await self.actuator_POST(node_id=actuator_match.group('node_id'))
 
+        elif re.match(b'/config/copy/rcm/?', request.target):
+            await self.POST_controller_copy_rcm(request)
+
     async def actuator_GET(self, node_id=None):
         """
         Request for actuator information. When node_id is None, the full
@@ -132,3 +135,12 @@ class RestClientConnection(asyncio.Protocol):
 
     async def actuator_POST(request, node_id=None):
         pass
+
+    async def POST_controller_copy_rcm(request):
+        copy_ntf = self.klf_client.get_response(messages.config.CsControllerCopyNtf)
+        await self.klf_client.send(messages.config.CsControllerCopyReq(messages.config.CsControllerCopyReq.COPY_MODE_RCM))
+        copy_status = await copy_ntf
+        await self.write_simple_response(body={
+            'copy_mode': copy_status.controller_copy_mode,
+            'copy_status': copy_status.controller_copy_status,
+        })
