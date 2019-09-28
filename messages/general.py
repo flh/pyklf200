@@ -19,6 +19,7 @@
 from . import commands
 from .base import KlfGwResponse, KlfGwRequest, KlfSuccessOneMixin
 from datetime import datetime
+from ipaddress import IPv4Address
 
 class GetVersionReq(KlfGwRequest):
     klf_command = commands.GW_GET_VERSION_REQ
