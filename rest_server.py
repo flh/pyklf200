@@ -86,28 +86,41 @@ class RestClientConnection(asyncio.Protocol):
                 headers=(('Allow', 'GET, POST'),),
                 body={'status': 'error', 'reason': 'HTTP method not allowed'})
 
-    async def handle_GET(self, request):
-        url_patterns = (
-            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.actuator_GET),
-            (b'/version/?', self.GET_gateway_version),
-            (b'/network_setup/?', self.GET_network_setup),
-        )
+    @staticmethod
+    def find_handler(url_patterns, target):
         for url_pattern, url_handler in url_patterns:
             url_match = re.match(url_pattern, request.target)
             if url_match is not None:
-                await url_handler(request, **url_match.groupdict())
-                return
+                return url_handler
+        return None
+
+    async def handle_GET(self, request):
+        url_handler = self.find_handler((
+            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.GET_actuator),
+            (b'/version/?', self.GET_gateway_version),
+            (b'/network_setup/?', self.GET_network_setup),
+            (b'/clock/?', self.GET_clock),
+        ))
+        if url_handler is not None:
+            await url_handler(request, **url_match.groupdict())
+        else:
+            self.handle_not_found(request)
+
+    async def handle_not_found(self, request):
+        await self.write_simple_response(status_code=404,
+            reason=b'Not found', body={})
 
     async def handle_POST(self, request):
-        actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
-                request.path)
-        if actuator_match is not None:
-            await self.actuator_POST(node_id=actuator_match.group('node_id'))
+        url_handler = self.find_handler((
+            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
+            (b'/config/controller_copy/?', self.POST_controller_copy),
+        ))
+        if url_handler is not None:
+            await url_handler(request, **url_match.groupdict())
+        else:
+            self.handle_not_found(request)
 
-        elif re.match(b'/config/copy/rcm/?', request.target):
-            await self.POST_controller_copy_rcm(request)
-
-    async def actuator_GET(self, request, node_id=None):
+    async def GET_actuator(self, request, node_id=None):
         """
         Request for actuator information. When node_id is None, the full
         list of actuators is returned.
@@ -140,7 +153,7 @@ class RestClientConnection(asyncio.Protocol):
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
 
-    async def actuator_POST(self, request, node_id=None):
+    async def POST_actuator(self, request, node_id=None):
         pass
 
     async def POST_controller_copy_rcm(self, request):
