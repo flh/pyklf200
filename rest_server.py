@@ -89,7 +89,7 @@ class RestClientConnection(asyncio.Protocol):
     @staticmethod
     def find_handler(url_patterns, target):
         for url_pattern, url_handler in url_patterns:
-            url_match = re.match(url_pattern, request.target)
+            url_match = re.match(url_pattern, target)
             if url_match is not None:
                 return url_handler
         return None
