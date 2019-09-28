@@ -206,12 +206,6 @@ class RestClientConnection(asyncio.Protocol):
 
     async def POST_clock(self, request):
         clock_cfm = await self.klf_client.send(messages.general.SetUTCReq())
-        if clock_cfm.is_success:
-            await self.write_simple_response(body={
-                'status': 'success',
-            })
-        else:
-            await self.write_simple_response(body={
-                'status': 'fail',
-                'message': "Couldn't set gateway UTC",
+        await self.write_simple_response(body={
+                'status': 'done',
             })
