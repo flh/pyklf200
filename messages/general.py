@@ -41,6 +41,9 @@ class GetVersionCfm(KlfGwResponse):
 class GetProtocolVersionReq(KlfGwRequest):
     klf_command = commands.GW_GET_PROTOCOL_VERSION_REQ
 
+    def get_arguments(self):
+        return ()
+
 class GetProtocolVersionCfm(KlfGwResponse):
     klf_command = commands.GW_GET_PROTOCOL_VERSION_CFM
     arguments_format = 'HH'
