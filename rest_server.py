@@ -90,6 +90,7 @@ class RestClientConnection(asyncio.Protocol):
         url_patterns = (
             (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.actuator_GET),
             (b'/version/?', self.GET_gateway_version),
+            (b'/network_setup/?', self.GET_network_setup),
         )
         for url_pattern, url_handler in url_patterns:
             url_match = re.match(url_pattern, request.target)
@@ -161,4 +162,13 @@ class RestClientConnection(asyncio.Protocol):
             'product_type': firmware_version_info.product_type,
             'protocol_major_version': protocol_version_info.major_version,
             'protocol_minor_version': protocol_version_info.minor_version,
+        })
+
+    async def GET_network_setup(self, request):
+        network_info = await self.klf_client.send(messages.general.GetNetworkSetupReq())
+        await self.write_simple_response(body={
+            'ip_address': network_info.ip_address,
+            'mask': network_info.mask,
+            'default_gw': network_info.default_gw,
+            'use_dhcp': network_info.use_dhcp
         })

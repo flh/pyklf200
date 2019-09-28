@@ -130,6 +130,9 @@ class SetFactoryDefaultCfm(KlfGwResponse):
 class GetNetworkSetupReq(KlfGwRequest):
     klf_command = commands.GW_GET_NETWORK_SETUP_REQ
 
+    def get_arguments(self):
+        return ()
+
 class GetNetworkSetupCfm(KlfGwResponse):
     klf_command = commands.GW_GET_NETWORK_SETUP_CFM
     arguments_format = '4s4s4sB'
