@@ -155,10 +155,10 @@ class RestClientConnection(asyncio.Protocol):
         firmware_version_info = await self.klf_client.send(messages.general.GetVersionReq())
         protocol_version_info = await self.klf_client.send(messages.general.GetProtocolVersionReq())
         await self.write_simple_response(body={
-            'software_version': list(version_info.software_version),
-            'hardware_version': version_info.hardware_version,
-            'product_group': version_info.product_group,
-            'product_type': version_info.product_type,
+            'software_version': list(firmware_version_info.software_version),
+            'hardware_version': firmware_version_info.hardware_version,
+            'product_group': firmware_version_info.product_group,
+            'product_type': firmware_version_info.product_type,
             'protocol_major_version': protocol_version_info.major_version,
             'protocol_minor_version': protocol_version_info.minor_version,
         })
