@@ -200,7 +200,7 @@ class RestClientConnection(asyncio.Protocol):
     async def GET_clock(self, request):
         clock_info = await self.klf_client.send(messages.general.GetLocalTimeReq())
         await self.write_simple_response(body={
-            'time': clock_info.isoformat(),
+            'time': clock_info.utc_time.isoformat(),
         })
 
     async def POST_clock(self, request):
