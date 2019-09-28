@@ -100,7 +100,7 @@ class RestClientConnection(asyncio.Protocol):
             (b'/version/?', self.GET_gateway_version),
             (b'/network_setup/?', self.GET_network_setup),
             (b'/clock/?', self.GET_clock),
-        ))
+        ), request.target)
         if url_handler is not None:
             await url_handler(request, **url_match.groupdict())
         else:
@@ -114,7 +114,7 @@ class RestClientConnection(asyncio.Protocol):
         url_handler = self.find_handler((
             (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
             (b'/config/controller_copy/?', self.POST_controller_copy),
-        ))
+        ), request.target)
         if url_handler is not None:
             await url_handler(request, **url_match.groupdict())
         else:
