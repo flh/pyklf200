@@ -23,6 +23,9 @@ from datetime import datetime
 class GetVersionReq(KlfGwRequest):
     klf_command = commands.GW_GET_VERSION_REQ
 
+    def get_arguments(self):
+        return ()
+
 class GetVersionCfm(KlfGwResponse):
     klf_command = commands.GW_GET_VERSION_CFM
     arguments_format = '6sBBB'
