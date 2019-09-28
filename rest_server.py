@@ -185,3 +185,12 @@ class RestClientConnection(asyncio.Protocol):
             'default_gw': str(network_info.default_gw),
             'use_dhcp': network_info.use_dhcp
         })
+
+    async def GET_clock(self, request):
+        clock_info = await self.klf_client.send(messages.general.GetLocalTimeReq())
+        await self.write_simple_response(body={
+            'time': clock_info.isoformat(),
+        })
+
+    async def POST_clock(self, request):
+        pass

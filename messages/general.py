@@ -106,6 +106,9 @@ class SetTimeZoneCfm(KlfSuccessOneMixin, KlfGwResponse):
 class GetLocalTimeReq(KlfGwRequest):
     klf_command = commands.GW_GET_LOCAL_TIME_REQ
 
+    def get_arguments(self):
+        return ()
+
 class GetLocalTimeCfm(KlfGwResponse):
     klf_command = commands.GW_GET_LOCAL_TIME_CFM
     arguments_format = 'LBBBBBHBHB'
