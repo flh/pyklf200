@@ -87,11 +87,11 @@ class RestClientConnection(asyncio.Protocol):
                 body={'status': 'error', 'reason': 'HTTP method not allowed'})
 
     @staticmethod
-    def find_handler(url_patterns, target):
+    def find_handler(url_patterns, request):
         for url_pattern, url_handler in url_patterns:
-            url_match = re.match(url_pattern, target)
+            url_match = re.match(url_pattern, request.target)
             if url_match is not None:
-                return url_handler
+                return url_handler(request, **url_match.groupdict())
         return None
 
     async def handle_GET(self, request):
@@ -100,9 +100,9 @@ class RestClientConnection(asyncio.Protocol):
             (b'/version/?', self.GET_gateway_version),
             (b'/network_setup/?', self.GET_network_setup),
             (b'/clock/?', self.GET_clock),
-        ), request.target)
+        ), request)
         if url_handler is not None:
-            await url_handler(request, **url_match.groupdict())
+            await url_handler
         else:
             self.handle_not_found(request)
 
@@ -114,9 +114,9 @@ class RestClientConnection(asyncio.Protocol):
         url_handler = self.find_handler((
             (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
             (b'/config/controller_copy/?', self.POST_controller_copy),
-        ), request.target)
+        ), request)
         if url_handler is not None:
-            await url_handler(request, **url_match.groupdict())
+            await url_handler
         else:
             self.handle_not_found(request)
 
