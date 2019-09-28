@@ -156,9 +156,20 @@ class RestClientConnection(asyncio.Protocol):
     async def POST_actuator(self, request, node_id=None):
         pass
 
-    async def POST_controller_copy_rcm(self, request):
+    async def POST_controller_copy(self, request):
+        body_json = json.loads(request.body)
+        copy_mode = body.json.get('copy_mode')
+        if copy_mode == 'rcm':
+            message_copy_mode = messages.config.CsControllerCopyReq.COPY_MODE_RCM
+        elif copy_mode == 'tcm':
+            message_copy_mode = messages.config.CsControllerCopyReq.COPY_MODE_TCM
+        else:
+            await self.write_simple_response(body={
+                    'error': "Unhandled value for copy_mode"},
+                status_code=400)
+
         copy_ntf = self.klf_client.get_response(messages.config.CsControllerCopyNtf)
-        await self.klf_client.send(messages.config.CsControllerCopyReq(messages.config.CsControllerCopyReq.COPY_MODE_RCM))
+        await self.klf_client.send(messages.config.CsControllerCopyReq(message_copy_mode))
         copy_status = await copy_ntf
         await self.write_simple_response(body={
             'copy_mode': copy_status.controller_copy_mode,
