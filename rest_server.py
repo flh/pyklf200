@@ -114,6 +114,7 @@ class RestClientConnection(asyncio.Protocol):
         url_handler = self.find_handler((
             (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
             (b'/config/controller_copy/?', self.POST_controller_copy),
+            (b'/clock/?', self.POST_clock),
         ), request)
         if url_handler is not None:
             await url_handler
@@ -204,4 +205,13 @@ class RestClientConnection(asyncio.Protocol):
         })
 
     async def POST_clock(self, request):
-        pass
+        clock_cfm = await self.klf_client.send(messages.general.SetUTCReq())
+        if clock_cfm.is_success:
+            await self.write_simple_response(body={
+                'status': 'success',
+            })
+        else:
+            await self.write_simple_response(body={
+                'status': 'fail',
+                'message': "Couldn't set gateway UTC",
+            })
