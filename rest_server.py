@@ -167,8 +167,8 @@ class RestClientConnection(asyncio.Protocol):
     async def GET_network_setup(self, request):
         network_info = await self.klf_client.send(messages.general.GetNetworkSetupReq())
         await self.write_simple_response(body={
-            'ip_address': network_info.ip_address,
-            'mask': network_info.mask,
-            'default_gw': network_info.default_gw,
+            'ip_address': str(network_info.ip_address),
+            'mask': str(network_info.mask),
+            'default_gw': str(network_info.default_gw),
             'use_dhcp': network_info.use_dhcp
         })
