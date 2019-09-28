@@ -22,6 +22,7 @@ import h11
 import asyncio
 import logging
 import messages.info
+import messages.general
 
 class RestClientConnection(asyncio.Protocol):
     """
@@ -86,10 +87,15 @@ class RestClientConnection(asyncio.Protocol):
                 body={'status': 'error', 'reason': 'HTTP method not allowed'})
 
     async def handle_GET(self, request):
-        actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
-                request.target)
-        if actuator_match is not None:
-            await self.actuator_GET(node_id=actuator_match.group('node_id'))
+        url_patterns = (
+            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.actuator_GET),
+            (b'/version/?', self.GET_gateway_version),
+        )
+        for url_pattern, url_handler in url_patterns:
+            url_match = re.match(url_pattern, request.target)
+            if url_match is not None:
+                await url_handler(request, **url_match.groupdict())
+                return
 
     async def handle_POST(self, request):
         actuator_match = re.match(b'/actuator/(?:(?P<node_id>\d+)/)?$',
@@ -100,7 +106,7 @@ class RestClientConnection(asyncio.Protocol):
         elif re.match(b'/config/copy/rcm/?', request.target):
             await self.POST_controller_copy_rcm(request)
 
-    async def actuator_GET(self, node_id=None):
+    async def actuator_GET(self, request, node_id=None):
         """
         Request for actuator information. When node_id is None, the full
         list of actuators is returned.
@@ -133,14 +139,23 @@ class RestClientConnection(asyncio.Protocol):
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
 
-    async def actuator_POST(request, node_id=None):
+    async def actuator_POST(self, request, node_id=None):
         pass
 
-    async def POST_controller_copy_rcm(request):
+    async def POST_controller_copy_rcm(self, request):
         copy_ntf = self.klf_client.get_response(messages.config.CsControllerCopyNtf)
         await self.klf_client.send(messages.config.CsControllerCopyReq(messages.config.CsControllerCopyReq.COPY_MODE_RCM))
         copy_status = await copy_ntf
         await self.write_simple_response(body={
             'copy_mode': copy_status.controller_copy_mode,
             'copy_status': copy_status.controller_copy_status,
+        })
+
+    async def GET_gateway_version(self, request):
+        version_info = await self.klf_client.send(messages.general.GetVersionReq())
+        await self.write_simple_response(body={
+            'software_version': version_info.software_version,
+            'hardware_version': version_info.hardware_version,
+            'product_group': version_info.product_group,
+            'product_type': version_info.product_type,
         })
