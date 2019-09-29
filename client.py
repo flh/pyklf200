@@ -147,7 +147,7 @@ class KlfClient(asyncio.Protocol):
         for event in self.klf_connection.iter_events():
             if isinstance(event, messages.general.ErrorNtf) and \
                 self.pending_request is not None:
-                self.pending_request.set_exception(event)
+                self.pending_request.set_exception(Exception(event))
 
             elif isinstance(event, KlfGwResponse):
                 def iter_and_remove(list):
