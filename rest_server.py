@@ -205,7 +205,21 @@ class RestClientConnection(asyncio.Protocol):
         })
 
     async def POST_clock(self, request):
+        json_body = json.loads(request.body)
         clock_cfm = await self.klf_client.send(messages.general.SetUTCReq())
+        timezone = json_body.get('timezone')
+        if timezone is not None:
+            tz_cfm = await self.klf_client.send(messages.general.RtcSetTimeZoneReq(timezone.encode('utf-8')))
+            if tz_cfm.is_success:
+                await self.write_simple_response(body={
+                    'status': 'done',
+                })
+            else:
+                await self.write_simple_response(status_code=500, body={
+                    'status': 'fail',
+                })
+            return
+
         await self.write_simple_response(body={
                 'status': 'done',
             })

@@ -95,10 +95,10 @@ class RtcSetTimeZoneReq(KlfGwRequest):
     klf_command = commands.GW_RTC_SET_TIME_ZONE_REQ
 
     def __init__(self, timezone):
-        raise NotImplemented
+        self.timezone = timezone
 
     def get_arguments(self):
-        raise NotImplemented
+        return (('64s', self.timezone),)
 
 class SetTimeZoneCfm(KlfSuccessOneMixin, KlfGwResponse):
     klf_command = commands.GW_RTC_SET_TIME_ZONE_CFM
