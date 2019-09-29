@@ -141,7 +141,8 @@ class RestClientConnection(asyncio.Protocol):
                 await url_handler
             else:
                 await self.handle_not_found(request)
-        except:
+        except Exception as e:
+            logging.error(e, exc_info=True)
             await self.internal_error(request)
 
     async def handle_POST(self, request):
@@ -155,7 +156,8 @@ class RestClientConnection(asyncio.Protocol):
                 await url_handler
             else:
                 await self.handle_not_found(request)
-        except:
+        except Exception as e:
+            logging.error(e, exc_info=True)
             await self.internal_error(request)
 
     async def GET_actuator(self, request, node_id=None):
