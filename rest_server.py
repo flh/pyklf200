@@ -44,23 +44,33 @@ class RestClientConnection(asyncio.Protocol):
         """
         while True:
             self.connection.receive_data(await self.reader.read(100))
+            event = None
+            current_request = None
 
-            while True:
+            while not (isinstance(event, h11.ConnectionClosed)
+                    or event is h11.NEED_DATA
+                    or event is h11.PAUSED):
+
                 event = self.connection.next_event()
 
                 if isinstance(event, h11.Request):
                     if event.method == b'GET':
                         await self.handle_GET(event)
                     elif event.method == b'POST':
-                        await self.handle_POST(event)
+                        current_request = event
+                        current_request.body = b''
                     else:
                         # Method not allowed
                         await self.method_not_allowed()
 
-                elif isinstance(event, h11.ConnectionClosed) \
-                        or event is h11.NEED_DATA \
-                        or event is h11.PAUSED:
-                    break
+                elif isinstance(event, h11.Data):
+                    current_request.body += event.data
+
+                elif isinstance(event, h11.EndOfMessage) and \
+                        isinstance(current_request, h11.Request) and \
+                        current_request.method == b'POST':
+                    await self.handle_post(current_request)
+                    current_request = None
 
             if self.connection.our_state is h11.MUST_CLOSE:
                 self.writer.close()
