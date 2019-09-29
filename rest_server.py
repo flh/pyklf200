@@ -193,7 +193,7 @@ class RestClientConnection(asyncio.Protocol):
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
 
-    async def POST_actuator(self, request):
+    async def POST_actuator(self, request, node_id):
         command_args = {}
 
         def parse_value(value):
