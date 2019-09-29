@@ -221,7 +221,7 @@ class RestClientConnection(asyncio.Protocol):
                     return messages.fp.Percent(-percent)
 
         command_args['main_parameter'] = parse_value(request.body_json.get('value'))
-        command_args['nodes'] = (node_id,)
+        command_args['nodes'] = (int(node_id),)
         command_req = messages.command_handler.CommandSendReq(**command_args)
         command_cfm = await self.klf_client.send(messages.command_handler.CommandSendReq(**command_args))
         # TODO check if command_cfm has the same session id
