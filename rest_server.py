@@ -69,7 +69,7 @@ class RestClientConnection(asyncio.Protocol):
                 elif isinstance(event, h11.EndOfMessage) and \
                         isinstance(current_request, h11.Request) and \
                         current_request.method == b'POST':
-                    await self.handle_post(current_request)
+                    await self.handle_POST(current_request)
                     current_request = None
 
             if self.connection.our_state is h11.MUST_CLOSE:
