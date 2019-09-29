@@ -116,8 +116,8 @@ class GetLocalTimeCfm(KlfGwResponse):
     def fill_arguments(self):
         self.utc_time = datetime.utcfromtimestamp(self.raw_arguments[0])
         self.local_time = datetime(
-            year=self.raw_arguments[6],
-            month=self.raw_arguments[5],
+            year=1900 + self.raw_arguments[6],
+            month=1 + self.raw_arguments[5],
             day=self.raw_arguments[4],
             hour=self.raw_arguments[3],
             minute=self.raw_arguments[2],
