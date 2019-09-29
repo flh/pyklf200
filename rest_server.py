@@ -109,7 +109,7 @@ class RestClientConnection(asyncio.Protocol):
                 reason='Internal server error',
                 body={'status': 'error'})
 
-        async def handle_not_found(self, request):
+    async def handle_not_found(self, request):
         await self.write_simple_response(status_code=404,
             reason=b'Not found',
             body={'status': 'error'})
