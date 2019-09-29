@@ -175,7 +175,7 @@ class SetNetworkSetupReq(KlfGwRequest):
 class SetNetworkSetupCfm(KlfGwResponse):
     klf_command = commands.GW_SET_NETWORK_SETUP_CFM
 
-class ErrorNtf(KlfGwResponse):
+class ErrorNtf(KlfGwResponse, Exception):
     klf_command = commands.GW_ERROR_NTF
     arguments_format = 'B'
 

@@ -131,6 +131,7 @@ class KlfClient(asyncio.Protocol):
         super().__init__()
         self.loop = loop
         self.heartbeat_handler = loop.call_later(10 * 60, self.ping)
+        self.pending_request = None
 
     def reschedule_heartbeat(self):
         self.heartbeat_handler.cancel()
@@ -144,8 +145,11 @@ class KlfClient(asyncio.Protocol):
     def data_received(self, data):
         self.klf_connection.receive_data(data)
         for event in self.klf_connection.iter_events():
-            # TODO handle KlfErrorNtf
-            if isinstance(event, KlfGwResponse):
+            if isinstance(event, ErrorNtf) and \
+                self.pending_request is not None:
+                self.pending_request.set_exception(event)
+
+            elif isinstance(event, KlfGwResponse):
                 def iter_and_remove(list):
                     while True:
                         try:
@@ -166,10 +170,10 @@ class KlfClient(asyncio.Protocol):
         return getattr(inspect.getmodule(kls), re.sub(r'Req$', 'Cfm', kls.__name__))
 
     def send(self, message):
-        future = self.get_response(KlfClient.get_cfm_type(message))
+        self.pending_request = self.get_response(KlfClient.get_cfm_type(message))
         self.transport.write(self.klf_connection.send(message))
         self.reschedule_heartbeat()
-        return future
+        return self.pending_request
 
     def authenticate(self, password):
         """
