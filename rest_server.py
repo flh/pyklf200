@@ -104,10 +104,15 @@ class RestClientConnection(asyncio.Protocol):
                 return url_handler(request, **url_match.groupdict())
         return None
 
-    async def handle_not_found(self, request):
+    async def internal_error(self, request):
         await self.write_simple_response(status_code=500,
                 reason='Internal server error',
                 body={'status': 'error'})
+
+        async def handle_not_found(self, request):
+        await self.write_simple_response(status_code=404,
+            reason=b'Not found',
+            body={'status': 'error'})
 
     async def handle_GET(self, request):
         try:
@@ -123,10 +128,6 @@ class RestClientConnection(asyncio.Protocol):
                 await self.handle_not_found(request)
         except:
             await self.internal_error(request)
-
-    async def handle_not_found(self, request):
-        await self.write_simple_response(status_code=404,
-            reason=b'Not found', body={})
 
     async def handle_POST(self, request):
         try:
