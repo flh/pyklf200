@@ -145,7 +145,7 @@ class KlfClient(asyncio.Protocol):
     def data_received(self, data):
         self.klf_connection.receive_data(data)
         for event in self.klf_connection.iter_events():
-            if isinstance(event, ErrorNtf) and \
+            if isinstance(event, messages.general.ErrorNtf) and \
                 self.pending_request is not None:
                 self.pending_request.set_exception(event)
 
