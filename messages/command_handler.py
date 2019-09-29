@@ -127,7 +127,7 @@ class CommandSendReq(KlfSessionId, KlfGwRequest):
             else:
                 fpi2 |= 1 << (fp_index - 8)
 
-            fpvalues[fp_index] = int(fp_value)
+            fpvalues[fp_index] = fp_value
 
         nodes = list(self.nodes) + [0 for i in range(20 - len(self.nodes))]
 
@@ -146,9 +146,9 @@ class CommandSendReq(KlfSessionId, KlfGwRequest):
                 ('B', self.parameter_active),
                 ('B', fpi1),
                 ('B', fpi2),
-                ('H', self.main_parameter),
+                (None, bytes(self.main_parameter)),
             ) + \
-            tuple(('H', fpvalues[i]) for i in range(16)) + \
+            tuple((None, bytes(fpvalues[i])) for i in range(16)) + \
             (
                 ('B', len(self.nodes)),
             ) + \
