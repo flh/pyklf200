@@ -115,6 +115,14 @@ class GetLocalTimeCfm(KlfGwResponse):
 
     def fill_arguments(self):
         self.utc_time = datetime.utcfromtimestamp(self.raw_arguments[0])
+        self.local_time = datetime(
+            year=self.raw_arguments[6],
+            month=self.raw_arguments[5],
+            day=self.raw_arguments[4],
+            hour=self.raw_arguments[3],
+            minute=self.raw_arguments[2],
+            second=self.raw_arguments[1])
+        self.dst_flag = self.raw_arguments[9]
 
 class RtcSetTimeZoneCfm(KlfSuccessOneMixin, KlfGwResponse):
     klf_command = commands.GW_RTC_SET_TIME_ZONE_CFM
