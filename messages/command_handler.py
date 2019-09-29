@@ -150,7 +150,7 @@ class CommandSendReq(KlfSessionId, KlfGwRequest):
             ) + \
             tuple((None, bytes(fpvalues[i])) for i in range(16)) + \
             (
-                ('B', len(self.nodes)),
+                ('B', 1 + len(self.nodes)),
             ) + \
             tuple(('B', nodes[i]) for i in range(20)) + \
             (
