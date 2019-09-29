@@ -16,8 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import commands
-from base import KlfGwResponse, KlfGwRequest, KlfSuccessOneMixin
+from . import commands
+from .base import KlfGwResponse, KlfGwRequest, KlfSuccessOneMixin
 
 """
 Commands from the "Command Handler" section of the API
