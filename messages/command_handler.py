@@ -70,6 +70,7 @@ class KlfSessionId:
 
 class CommandSendReq(KlfSessionId, KlfGwRequest):
     klf_command = commands.GW_COMMAND_SEND_REQ
+
     ORIGINATOR_USER = 1
     ORIGINATOR_RAIN = 2
     ORIGINATOR_TIMER = 3
@@ -90,34 +91,70 @@ class CommandSendReq(KlfSessionId, KlfGwRequest):
     PRIORITY_COMFORT_LEVEL3 = 6
     PRIORITY_COMFORT_LEVEL4 = 7
 
+    PLI_DISABLE = 0
+    PLI_ENABLE = 1
+    PLI_ENABLE_ALL = 2
+    PLI_KEEP_CURRENT = 3
 
-    def __init__(self, command_originator=ORIGINATOR_USER,
+    def __init__(self, main_parameter,
+            command_originator=ORIGINATOR_USER,
             priority_level=PRIORITY_USER_LEVEL2,
-            parameter_active=0, fpi1, fpi2, fparr, index_array,
-            priority_level_lock=False, pli03, pli47, lock_time):
+            parameter_active=0, functional_parameters=(), nodes=(),
+            priority_level_lock=False, priority_levels=(), lock_time=0):
 
         super().__init__()
+        self.main_parameter = main_parameter
         self.command_originator = command_originator
         self.priority_level = priority_level
         self.priority_level_lock = priority_level_lock
-        pass
+        self.parameter_active = parameter_active
+        self.functional_parameters = functional_parameters
+        self.nodes = nodes
+        self.priority_levels = priority_levels
+        self.lock_time = lock_time
 
     def get_arguments(self):
+        fpi1 = 0
+        fpi2 = 0
+        fpvalues = [0 for i in range(16)]
+        for fp_index, fp_value in enumerate(self.functional_parameters):
+            if fp_index < 8:
+                fpi1 |= 1 << fp_index
+            else:
+                fpi2 |= 1 << (fp_index - 8)
+
+            fpvalues[fp_index] = int(fp_value)
+
+        nodes = list(self.nodes) + [0 for i in range(20 - len(self.nodes))]
+
+        pli03 = 0
+        pli47 = 0
+        for pl_index, pl_value in enumerate(self.priority_levels):
+            if pl_index < 4:
+                pli03 |= pl_value << (2 * pl_index)
+            else:
+                pli47 |= pl_value << (2 * (pl_index - 4))
+
         return (
-            ('H', self.session_id),
-            ('B', self.command_originator),
-            ('B', self.priority_level),
-            ('B', ...),
-            ('B', ...),
-            ('B', ...),
-            ('34s', ...),
-            ('B', len(self.index_array)),
-            ('20s', ...),
-            ('B', int(self.priority_level_lock)),
-            ('B', ...),
-            ('B', ...),
-            ('B', ...),
-        )
+                ('H', self.session_id),
+                ('B', self.command_originator),
+                ('B', self.priority_level),
+                ('B', self.parameter_active),
+                ('B', fpi1),
+                ('B', fpi2),
+                ('H', self.main_parameter),
+            ) + \
+            tuple(('H', fpvalues[i]) for i in range(16)) + \
+            (
+                ('B', len(self.nodes)),
+            ) + \
+            tuple(('B', nodes[i]) for i in range(20)) + \
+            (
+                ('B', int(self.priority_level_lock)),
+                ('B', pli03),
+                ('B', pli47),
+                ('B', int(self.lock_time // 30)),
+            )
 
 class CommandSendCfm(KlfSuccessOneMixin, KlfGwResponse):
     klf_command = commands.GW_COMMAND_SEND_CFM
