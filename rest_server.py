@@ -21,8 +21,11 @@ import re
 import h11
 import asyncio
 import logging
+
 import messages.info
 import messages.general
+import messages.command_handler
+import messages.fp
 
 class RestClientConnection(asyncio.Protocol):
     """
@@ -132,7 +135,7 @@ class RestClientConnection(asyncio.Protocol):
     async def handle_POST(self, request):
         try:
             url_handler = self.find_handler((
-                (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
+                (b'/actuator/(?P<node_id>\d+)/?$', self.POST_actuator),
                 (b'/config/controller_copy/?', self.POST_controller_copy),
                 (b'/clock/?', self.POST_clock),
             ), request)
@@ -176,8 +179,46 @@ class RestClientConnection(asyncio.Protocol):
         # Response to the HTTP request
         await self.write_simple_response(body=klf_nodes)
 
-    async def POST_actuator(self, request, node_id=None):
-        pass
+    async def POST_actuator(self, request):
+        body_json = json.loads(request.body)
+        command_args = {}
+
+        def parse_value(value):
+            if value == 'current':
+                return messages.fp.Current()
+            elif value == 'target':
+                return messages.fp.Target()
+            elif value == 'default':
+                return messages.fp.Default()
+            elif value == 'ignore':
+                return messages.fp.Ignore()
+            else:
+                value_match = re.fullmatch('(?P<sign>[+-])?(?P<percent>\d{,3})%',
+                        value)
+                if value_match is None:
+                    raise ValueError(value)
+
+                sign = value_match.group('sign')
+                percent = min(100, int(value_match.group('percent'))) / 100
+                if sign is None:
+                    return messages.fp.Relative(percent)
+                elif sign == '+':
+                    return messages.fp.Percent(percent)
+                else: # sign == '-'
+                    return messages.fp.Percent(-percent)
+
+        command_args['main_parameter'] = parse_value(body_json.get('value')
+        command_args['nodes'] = (node_id,)
+        command_req = messages.command_handler.CommandSendReq(**command_args)
+        command_cfm = await self.klf_client.send(messages.command_handler.CommandSendReq(**command_args))
+        # TODO check if command_cfm has the same session id
+        body = {'session_id': command_req.session_id}
+        if command_cfm.is_success:
+            body['status'] = 'accepted'
+        else:
+            body['status'] = 'rejected'
+
+        await self.write_simple_response(body=body)
 
     async def POST_controller_copy(self, request):
         body_json = json.loads(request.body)
