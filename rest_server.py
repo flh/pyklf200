@@ -104,32 +104,43 @@ class RestClientConnection(asyncio.Protocol):
                 return url_handler(request, **url_match.groupdict())
         return None
 
+    async def handle_not_found(self, request):
+        await self.write_simple_response(status_code=500,
+                reason='Internal server error',
+                body={'status': 'error'})
+
     async def handle_GET(self, request):
-        url_handler = self.find_handler((
-            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.GET_actuator),
-            (b'/version/?', self.GET_gateway_version),
-            (b'/network_setup/?', self.GET_network_setup),
-            (b'/clock/?', self.GET_clock),
-        ), request)
-        if url_handler is not None:
-            await url_handler
-        else:
-            self.handle_not_found(request)
+        try:
+            url_handler = self.find_handler((
+                (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.GET_actuator),
+                (b'/version/?', self.GET_gateway_version),
+                (b'/network_setup/?', self.GET_network_setup),
+                (b'/clock/?', self.GET_clock),
+            ), request)
+            if url_handler is not None:
+                await url_handler
+            else:
+                await self.handle_not_found(request)
+        except:
+            await self.internal_error(request)
 
     async def handle_not_found(self, request):
         await self.write_simple_response(status_code=404,
             reason=b'Not found', body={})
 
     async def handle_POST(self, request):
-        url_handler = self.find_handler((
-            (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
-            (b'/config/controller_copy/?', self.POST_controller_copy),
-            (b'/clock/?', self.POST_clock),
-        ), request)
-        if url_handler is not None:
-            await url_handler
-        else:
-            self.handle_not_found(request)
+        try:
+            url_handler = self.find_handler((
+                (b'/actuator/(?:(?P<node_id>\d+)/)?$', self.POST_actuator),
+                (b'/config/controller_copy/?', self.POST_controller_copy),
+                (b'/clock/?', self.POST_clock),
+            ), request)
+            if url_handler is not None:
+                await url_handler
+            else:
+                await self.handle_not_found(request)
+        except:
+            await self.internal_error(request)
 
     async def GET_actuator(self, request, node_id=None):
         """
