@@ -72,7 +72,19 @@ class RestClientConnection(asyncio.Protocol):
                 elif isinstance(event, h11.EndOfMessage) and \
                         isinstance(current_request, h11.Request) and \
                         current_request.method == b'POST':
-                    await self.handle_POST(current_request)
+                    try:
+                        current_request.body_json = json.loads(current_request.body)
+                    except json.JSONDecodeError:
+                        await self.write_simple_response(
+                            status_code=400,
+                            reason='Invalid request',
+                            body={
+                                'status': 'error',
+                                'message': 'Invalid JSON data',
+                            })
+                    else:
+                        await self.handle_POST(current_request)
+
                     current_request = None
 
             if self.connection.our_state is h11.MUST_CLOSE:
@@ -180,7 +192,6 @@ class RestClientConnection(asyncio.Protocol):
         await self.write_simple_response(body=klf_nodes)
 
     async def POST_actuator(self, request):
-        body_json = json.loads(request.body)
         command_args = {}
 
         def parse_value(value):
@@ -207,7 +218,7 @@ class RestClientConnection(asyncio.Protocol):
                 else: # sign == '-'
                     return messages.fp.Percent(-percent)
 
-        command_args['main_parameter'] = parse_value(body_json.get('value'))
+        command_args['main_parameter'] = parse_value(request.body_json.get('value'))
         command_args['nodes'] = (node_id,)
         command_req = messages.command_handler.CommandSendReq(**command_args)
         command_cfm = await self.klf_client.send(messages.command_handler.CommandSendReq(**command_args))
@@ -221,8 +232,7 @@ class RestClientConnection(asyncio.Protocol):
         await self.write_simple_response(body=body)
 
     async def POST_controller_copy(self, request):
-        body_json = json.loads(request.body)
-        copy_mode = body.json.get('copy_mode')
+        copy_mode = request.body_json.get('copy_mode')
         if copy_mode == 'rcm':
             message_copy_mode = messages.config.CsControllerCopyReq.COPY_MODE_RCM
         elif copy_mode == 'tcm':
@@ -270,9 +280,8 @@ class RestClientConnection(asyncio.Protocol):
         })
 
     async def POST_clock(self, request):
-        json_body = json.loads(request.body)
         clock_cfm = await self.klf_client.send(messages.general.SetUTCReq())
-        timezone = json_body.get('timezone')
+        timezone = request.body_json.get('timezone')
         if timezone is not None:
             tz_cfm = await self.klf_client.send(messages.general.RtcSetTimeZoneReq(timezone.encode('utf-8')))
             if tz_cfm.is_success:
