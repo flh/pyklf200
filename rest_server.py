@@ -207,7 +207,7 @@ class RestClientConnection(asyncio.Protocol):
                 else: # sign == '-'
                     return messages.fp.Percent(-percent)
 
-        command_args['main_parameter'] = parse_value(body_json.get('value')
+        command_args['main_parameter'] = parse_value(body_json.get('value'))
         command_args['nodes'] = (node_id,)
         command_req = messages.command_handler.CommandSendReq(**command_args)
         command_cfm = await self.klf_client.send(messages.command_handler.CommandSendReq(**command_args))
