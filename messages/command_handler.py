@@ -45,7 +45,11 @@ class KlfSessionId:
 
     @classmethod
     def _allocate_session(cls):
-        session_id = 1 + max(cls._running_sessions)
+        try:
+            session_id = 1 + max(cls._running_sessions)
+        except ValueError:
+            session_id = 0
+
         if session_id >= 2 ** 16:
             for i in range(2 ** 16):
                 if i not in cls._running_sessions:
