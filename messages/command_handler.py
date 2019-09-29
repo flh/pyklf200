@@ -120,7 +120,7 @@ class CommandSendReq(KlfSessionId, KlfGwRequest):
     def get_arguments(self):
         fpi1 = 0
         fpi2 = 0
-        fpvalues = [0 for i in range(16)]
+        fpvalues = [bytes((0, 0)) for i in range(16)]
         for fp_index, fp_value in enumerate(self.functional_parameters):
             if fp_index < 8:
                 fpi1 |= 1 << fp_index
