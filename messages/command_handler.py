@@ -190,3 +190,34 @@ class SessionFinishedNtf(KlfGwResponse):
     def fill_parameters(self):
         self.session_id = self.raw_arguments[0]
         KlfSessionId.free_session(self.session_id)
+
+class WinkSendReq(KlfSessionId, KlfGwRequest):
+    klf_command = commands.GW_WINK_SEND_REQ
+
+    WINK_DISABLE = 0
+    WINK_ENABLE = 1
+
+    def __init__(self, wink_state, wink_time, nodes,
+            originator=..., priority_level=...):
+        super().__init__()
+        self.originator = originator
+        self.priority_level = priority_level
+        self.wink_state = wink_state
+        self.wink_time = wink_time
+        self.nodes = nodes
+
+    def get_arguments(self):
+        nodes = list(self.nodes) + [0 for i in range(20 - len(self.nodes))]
+
+        return (
+                ('H', self.session_id),
+                ('B', self.command_originator),
+                ('B', self.priority_level),
+                ('B', self.wink_state),
+                ('B', self.wink_time),
+                ('B', len(self.nodes)),
+            ) + \
+            tuple(('B', nodes[i]) for i in range(20))
+
+class WinkSendCfm(KlfSuccessOneMixin, KlfGwResponse):
+    klf_command = commands.GW_WINK_SEND_CFM

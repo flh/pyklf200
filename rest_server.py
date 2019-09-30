@@ -148,7 +148,8 @@ class RestClientConnection(asyncio.Protocol):
     async def handle_POST(self, request):
         try:
             url_handler = self.find_handler((
-                (b'/actuator/(?P<node_id>\d+)/?$', self.POST_actuator),
+                (b'/actuator/(?P<node_id>\d+)/send/?$', self.POST_actuator),
+                (b'/actuator/(?P<node_id>\d+)/wink/?$', self.POST_actuator_wink),
                 (b'/config/controller_copy/?', self.POST_controller_copy),
                 (b'/clock/?', self.POST_clock),
             ), request)
@@ -232,6 +233,15 @@ class RestClientConnection(asyncio.Protocol):
             body['status'] = 'rejected'
 
         await self.write_simple_response(body=body)
+
+    async def POST_actuator_wink(self, request, node_id):
+        wink_cfm = await self.klf_client.send(messages.command_handler.WinkSendReq(
+            wink_state=messages.command_handler.WinkSendReq.WINK_ENABLE,
+            wink_time=15,
+            nodes=(int(node_id),))
+        await self.write_simple_response(body={
+            'status': 'accepted' if wink_cfm.is_success else 'rejected',
+            })
 
     async def POST_controller_copy(self, request):
         copy_mode = request.body_json.get('copy_mode')
