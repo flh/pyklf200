@@ -238,7 +238,7 @@ class RestClientConnection(asyncio.Protocol):
         wink_cfm = await self.klf_client.send(messages.command_handler.WinkSendReq(
             wink_state=messages.command_handler.WinkSendReq.WINK_ENABLE,
             wink_time=15,
-            nodes=(int(node_id),))
+            nodes=(int(node_id),)))
         await self.write_simple_response(body={
             'status': 'accepted' if wink_cfm.is_success else 'rejected',
             })
