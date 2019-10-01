@@ -97,7 +97,7 @@ class RestClientConnection(asyncio.Protocol):
         data = h11.Data(data=json.dumps(body).encode('utf-8'))
         response = h11.Response(status_code=status_code,
                 headers=headers + (
-                    ('Content-type', 'application/json; encoding=utf-8'),
+                    ('Content-type', 'application/json'),
                     ('Content-length', str(len(data.data))),
                 ), reason=reason)
         self.writer.write(self.connection.send(response) + self.connection.send(data) +
