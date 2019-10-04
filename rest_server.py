@@ -151,6 +151,7 @@ class RestClientConnection(asyncio.Protocol):
                 (b'/actuator/(?P<node_id>\d+)/send/?$', self.POST_actuator),
                 (b'/actuator/(?P<node_id>\d+)/wink/?$', self.POST_actuator_wink),
                 (b'/config/controller_copy/?', self.POST_controller_copy),
+                (b'/config/virgin_state/?', self.POST_virgin_state),
                 (b'/clock/?', self.POST_clock),
             ), request)
             if url_handler is not None:
@@ -306,6 +307,12 @@ class RestClientConnection(asyncio.Protocol):
                 })
             return
 
+        await self.write_simple_response(body={
+                'status': 'done',
+            })
+
+    async def POST_virgin_state(self, request):
+        await self.klf_client.send(messages.config.VirginStateReq())
         await self.write_simple_response(body={
                 'status': 'done',
             })
